@@ -21,6 +21,7 @@ from tkinter import ttk
 #Archivos de configuracion y modulos personalizados.
 from configuraciones import *
 #from configDEBUG import *
+from plenFLUX import plenFLUX
 
 #Utilizado solo para mostrar los logos.
 from PIL import Image, ImageTk
@@ -304,7 +305,7 @@ class Aplicacion():
 		##Añadido de la parte cheque
 		anulado = ""
 		numCHEQUE = ""
-		if reso == "apertura manual":
+		if reso == "apertura manual" and inci == "bloqueo surtidor":
 			anulado = "no"
 			numCHEQUE = "-"
 		##Devolucion de la incidencia
@@ -390,6 +391,8 @@ class Aplicacion():
 
 
 def main():
+	flux = plenFLUX()
+	flux.CurrentWrite()
 	mi_app = Aplicacion()
 	return 0
 

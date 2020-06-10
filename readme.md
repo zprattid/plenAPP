@@ -26,3 +26,4 @@ requiere modificaciones en el proceso de envío de correos y ha sido eliminada.
 
 La aplicacion plenAPP saca una consola de debug que informa de procesos y errores durante este.
 La aplicacion plenAPPw no muestra esa consola de debug
+El módulo plenFLUX lee los excel de incidencias y las contabiliza en otro excel diferente llamado "Flujo de clientes". Esta funcionalidad sirve, en su forma más básica, para conocer los puntos de mayor incidencia de clientes. En versiones futuras será mejorada para ofrecer más información. 
