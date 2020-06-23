@@ -325,7 +325,15 @@ class Aplicacion():
 		message['Subject'] = name
 		message['From'] = senderCONFIG["user"]
 		message['Reply-to'] = senderCONFIG["user"]
-		message['To'] = correos[estaciones[self.stationName]]+","+correoSALA
+		
+		if self.stationName in copyTOestefania:
+			message['To'] = correos[estaciones[self.stationName]]+","+correoSALA+","+"estefania.ruiz@plenoil.es"
+		elif self.stationName in copyTOalberto:
+			message['To'] = correos[estaciones[self.stationName]]+","+correoSALA+","+"alberto.sanchez@plenoil.es"
+		elif self.stationName in copyTOjavier:
+			message['To'] = correos[estaciones[self.stationName]]+","+correoSALA+","+"javier.garcia@plenoil.es"
+		else:
+			message['To'] = correos[estaciones[self.stationName]]+","+correoSALA
 
 		text = MIMEText(name)
 		
@@ -374,8 +382,18 @@ class Aplicacion():
 						ws.append(row)
 						wb.save(excelNAME)
 						self.sendMail()
-						messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
-											+correos[coord]+ " Y "+correoSALA)
+						if self.stationName in copyTOestefania:
+							messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
+												+correos[coord]+ ",estefania.ruiz@plenoil.es Y "+correoSALA)
+						elif self.stationName in copyTOalberto:
+							messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
+												+correos[coord]+ ",alberto.sanchez@plenoil.es Y "+correoSALA)
+						elif self.stationName in copyTOjavier:
+							messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
+												+correos[coord]+ ",javier.garcia@plenoil.es Y "+correoSALA)
+						else:
+							messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
+												+correos[coord]+" Y "+correoSALA)
 					except PermissionError:
 						messagebox.showerror("ERROR","EXCEL ABIERTO. CIERRA EXCEL Y REINICIA LA APLICACION")
 				else:

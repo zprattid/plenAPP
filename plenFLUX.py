@@ -5,7 +5,7 @@ import datetime
 
 class plenFLUX:
 	def __init__(self):
-		self.excelPATH = "C:\\Users\\diamond\\Documents\\"
+		self.excelPATH = "\\\\192.168.102.5\\t. de noche\\EXCEL PLENOIL\\"
 		self.excelNAME = "Flujo de clientes.xlsx"
 		self.paths = []
 		files = os.listdir(self.excelPATH)
