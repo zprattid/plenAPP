@@ -97,7 +97,7 @@ class Aplicacion():
 		########################
 		self.incidenciaLABEL = ttk.Label(self.raiz, text="INCIDENCIA", font = self.font)
 		self.incidenciaVAR = StringVar(self.raiz)
-		self.incidenciaVAR.set("bloqueo surtidor")
+		self.incidenciaVAR.set("cheque")
 		self.incidenciaMENU = OptionMenu(self.raiz, self.incidenciaVAR, *incidencias)
 		self.incidenciaMENU.config(font = self.font)
 		self.incidenciaOTRO = ttk.Entry(self.raiz)
@@ -148,7 +148,23 @@ class Aplicacion():
 		self.adjBUTTON.grid(column=1, row = 11, columnspan = 3, pady = 20)
 		self.sendBUTTON.grid(column=3, row = 11, columnspan = 3, pady = 20)
 		self.incNAME.grid(column = 2, row = 12, columnspan = 3, pady = 20)
+		########
+		##MENU##
+		########
+		'''self.menu = Menu(self.raiz)
+		self.raiz.config(menu=self.menu)
+		self.admin = Menu(self.menu, tearoff=0)
+		self.help = Menu(self.menu, tearoff=0)
+		self.menu.add_cascade(label="Administracion", menu=self.admin)
+		self.menu.add_cascade(label="Ayuda", menu=self.help)
+		self.admin.add_command(label="Estaciones", command=self.estacionesWindow)
+		self.admin.add_command(label="Incidencias", command=self.incidenciasWindow)
+		self.admin.add_command(label="Resoluciones", command=self.resolucionesWindow)
+		self.admin.add_command(label="Poner en copia...", command=self.copiaWindow)
+		self.help.add_command(label="Instrucciones de uso")
+		self.help.add_command(label="Acerca de...")'''
 		##INICIO DEL BUCLE PRINCIPAL##
+		#configActions.checkCopyFECHA()
 		self.raiz.mainloop()
 	def showCALL(self):
 		'''Esta función crea la interfaz necesaria para rellenar una incidencia en excel'''
@@ -225,6 +241,14 @@ class Aplicacion():
 		try:
 			estaciones[realNAME.lower()]#Importante convertir a minusculas
 			print("Estación en el listado")
+			if self.stationName in copyTOestefania:
+				print("Mensaje en copia a ESTEFANIA")
+			elif self.stationName in copyTOalberto:
+				print("Mensaje en copia a ALBERTO")
+			elif self.stationName in copyTOjavier:
+				print("Mensaje en copia a JAVIER")
+			else:
+				print("Mensaje SIN copia")
 			return True
 		except KeyError:
 			print("Estación no esta en el listado")
@@ -296,8 +320,8 @@ class Aplicacion():
 					except AttributeError:
 						pass
 		##Procesado de posibles incidencias y resoluciones OTRO
-		inci = self.incidenciaVAR.get()
-		reso = self.resolucionVAR.get()
+		inci = self.incidenciaVAR.get().upper()
+		reso = self.resolucionVAR.get().upper()
 		if self.incidenciaVAR.get() == "otra incidencia":
 			inci = self.incidenciaOTRO.get()
 		if self.resolucionVAR.get() == "otra resolucion":
@@ -305,13 +329,13 @@ class Aplicacion():
 		##Añadido de la parte cheque
 		anulado = ""
 		numCHEQUE = ""
-		if reso == "apertura manual" and inci == "bloqueo surtidor":
-			anulado = "no"
+		if reso.lower() == "apertura manual" and inci.lower() == "cheque no impreso":
+			anulado = "NO"
 			numCHEQUE = "-"
 		##Devolucion de la incidencia
-		return[self.stationName,dPrint,tPrint
-			,self.DEllamadaVAR.get(),inci, reso,self.solucionVAR.get()
-			,self.tlfVAR.get(),self.obsVAR.get(),anulado,numCHEQUE
+		return[self.stationName.upper(),dPrint,tPrint
+			,self.DEllamadaVAR.get().upper(),inci, reso,self.solucionVAR.get().upper()
+			,self.tlfVAR.get().upper(),self.obsVAR.get().upper(),anulado,numCHEQUE
 			,self.tiempoVAR.get()]
 	def sendMail(self):
 		'''Proceso para enviar el correo con la incidencia a los coordinadores
@@ -327,13 +351,17 @@ class Aplicacion():
 		message['Reply-to'] = senderCONFIG["user"]
 		
 		if self.stationName in copyTOestefania:
-			message['To'] = correos[estaciones[self.stationName]]+","+correoSALA+","+"estefania.ruiz@plenoil.es"
+			message['To'] = correos[estaciones[self.stationName]]+","+correoMARCOS+","+correoSALA+","+correos["estefania"]
+			print("Mensaje en copia a ESTEFANIA")
 		elif self.stationName in copyTOalberto:
-			message['To'] = correos[estaciones[self.stationName]]+","+correoSALA+","+"alberto.sanchez@plenoil.es"
+			message['To'] = correos[estaciones[self.stationName]]+","+correoMARCOS+","+correoSALA+","+correos["alberto"]
+			print("Mensaje en copia a ESTEFANIA")
 		elif self.stationName in copyTOjavier:
-			message['To'] = correos[estaciones[self.stationName]]+","+correoSALA+","+"javier.garcia@plenoil.es"
+			message['To'] = correos[estaciones[self.stationName]]+","+correoMARCOS+","+correoSALA+","+correos["javier"]
+			print("Mensaje en copia a ESTEFANIA")
 		else:
-			message['To'] = correos[estaciones[self.stationName]]+","+correoSALA
+			message['To'] = correos[estaciones[self.stationName]]+","+correoMARCOS+","+correoSALA
+			print("Mensaje SIN copia")
 
 		text = MIMEText(name)
 		
@@ -350,7 +378,14 @@ class Aplicacion():
 			#server.ehlo()
 			server.login(senderCONFIG["user"], senderCONFIG["pass"])
 			print("Login en servidor correcto")
-			server.sendmail(message['From'], [message['To'],correoSALA], message.as_string())
+			if self.stationName in copyTOestefania:
+				server.sendmail(message['From'], [message['To'],correoMARCOS,correoSALA,correos["estefania"]], message.as_string())
+			elif self.stationName in copyTOalberto:
+				server.sendmail(message['From'], [message['To'],correoMARCOS,correoSALA,correos["alberto"]], message.as_string())
+			elif self.stationName in copyTOjavier:
+				server.sendmail(message['From'], [message['To'],correoMARCOS,correoSALA,correos["javier"]], message.as_string())
+			else:
+				server.sendmail(message['From'], [message['To'],correoMARCOS,correoSALA], message.as_string())
 			print('Email Enviado')			
 			server.close()
 			print("Conexion con Servidor cerrada")
@@ -384,16 +419,16 @@ class Aplicacion():
 						self.sendMail()
 						if self.stationName in copyTOestefania:
 							messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
-												+correos[coord]+ ",estefania.ruiz@plenoil.es Y "+correoSALA)
+												+correos[coord]+ ",estefania.ruiz@plenoil.es, "+correoMARCOS+" Y "+correoSALA)
 						elif self.stationName in copyTOalberto:
 							messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
-												+correos[coord]+ ",alberto.sanchez@plenoil.es Y "+correoSALA)
+												+correos[coord]+ ",alberto.sanchez@plenoil.es, "+correoMARCOS+" Y "+correoSALA)
 						elif self.stationName in copyTOjavier:
 							messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
-												+correos[coord]+ ",javier.garcia@plenoil.es Y "+correoSALA)
+												+correos[coord]+ ",javier.garcia@plenoil.es, "+correoMARCOS+" Y "+correoSALA)
 						else:
 							messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
-												+correos[coord]+" Y "+correoSALA)
+												+correos[coord]+", "+correoMARCOS+" Y "+correoSALA)
 					except PermissionError:
 						messagebox.showerror("ERROR","EXCEL ABIERTO. CIERRA EXCEL Y REINICIA LA APLICACION")
 				else:
@@ -402,15 +437,238 @@ class Aplicacion():
 				if self.checkEstacionNAME() == True:
 					self.sendMail()
 					coord = estaciones[self.stationName]
-					messagebox.showinfo("INCIDENCIA CORRECTA","ENVIADO A "+correos[coord]
-										+ " Y "+correoSALA)
+					if self.stationName in copyTOestefania:
+						messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
+											+correos[coord]+ ",estefania.ruiz@plenoil.es, "+correoMARCOS+" Y "+correoSALA)
+					elif self.stationName in copyTOalberto:
+						messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
+											+correos[coord]+ ",alberto.sanchez@plenoil.es, "+correoMARCOS+" Y "+correoSALA)
+					elif self.stationName in copyTOjavier:
+						messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
+											+correos[coord]+ ",javier.garcia@plenoil.es, "+correoMARCOS+" Y "+correoSALA)
+					else:
+						messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
+											+correos[coord]+", "+correoMARCOS+" Y "+correoSALA)
 				else:
 					messagebox.showerror("ERROR","NOMBRE DE LA ESTACION NO ESTA EN LISTA")
-
+	def showCopyTO(self):
+		src = configActions.readConfig()
+		for line in src:
+			if "copyTOestefania" in line:
+				#print(line)
+				start = line.find("[")
+				stations = line[start+1:-2].split(",")
+				curedSTA = []
+				for station in stations:
+					curedSTA.append(station[1:-1])
+				stationSTRING = ""
+				for STA in curedSTA:
+					if STA == curedSTA[-1]:
+						stationSTRING = stationSTRING+STA
+					else:
+						stationSTRING = stationSTRING+STA+","
+				self.estefVAR.insert(0,stationSTRING)
+			elif "copyTOalberto" in line:
+				#print(line)
+				start = line.find("[")
+				stations = line[start+1:-2].split(",")
+				curedSTA = []
+				for station in stations:
+					curedSTA.append(station[1:-1])
+				stationSTRING = ""
+				for STA in curedSTA:
+					stationSTRING = stationSTRING+STA+","
+				self.alberVAR.insert(0,stationSTRING)
+			elif "copyTOjavier" in line:
+				#print(line)
+				start = line.find("[")
+				stations = line[start+1:-2].split(",")
+				curedSTA = []
+				for station in stations:
+					curedSTA.append(station[1:-1])
+				stationSTRING = ""
+				for STA in curedSTA:
+					stationSTRING = stationSTRING+STA+","
+				self.javieVAR.insert(0,stationSTRING)
+		self.EdiaVAR.set(copyFECHA.day)
+		self.EmesVAR.set(copyFECHA.month)
+	def saveCopyTO(self):
+		copyDICT = {"copyTOestefania": None,
+					"copyTOalberto": None,
+					"copyTOjavier": None
+					}
+		for ind,val in enumerate(copyDICT):
+			if val == "copyTOestefania":
+				rawStr = self.estefVAR.get()
+			elif val == "copyTOalberto":
+				rawStr = self.alberVAR.get()
+			elif val == "copyTOjavier":
+				rawStr = self.javieVAR.get()
+			splitStr = rawStr.split(",")
+			commedARR = []
+			for i in splitStr:
+				commedARR.append('"'+i+'"')
+			finalStr = val+"=["
+			for i in commedARR:
+				if i == commedARR[-1]:
+					finalStr = finalStr+i+"]\n"
+				else:
+					finalStr = finalStr+i+","
+			copyDICT[val] = finalStr
+		configActions.writeCopyTO(copyDICT)
+	def estacionesWindow(self):
+		print("Abriendo Menu Estaciones")
+		self.estSettings = Toplevel(self.raiz)
+		self.estSettings.geometry('') #Autoajustable
+		self.estSettings.title("Configuracion estaciones")
+		##Lista de estaciones
+		self.estacionLABEL = ttk.Label(self.estSettings, text="Estaciones", font = self.font)
+		self.estacionVAR = StringVar(self.estSettings)
+		self.estacionMENU = OptionMenu(self.estSettings, self.estacionVAR, *estaciones)        
+		self.estacionMENU.config(font = self.font)
+		self.deleteBUT =  ttk.Button(self.estSettings, text="ELIMINAR", style = "size.TButton")
+		self.estacionLABEL.grid(column = 1, row = 1, columnspan = 3)
+		self.estacionMENU.grid(column = 1, row = 2, columnspan = 3)
+		self.deleteBUT.grid(column = 1, row = 3, columnspan = 3)
+		##Añadir
+		self.nameLABEL = ttk.Label(self.estSettings, text="NOMBRE", font = self.font)
+		self.nameVAR = ttk.Entry(self.estSettings)
+		self.respLABEL = ttk.Label(self.estSettings, text="RESPONSABLE", font = self.font)
+		self.respVAR = ttk.Entry(self.estSettings)
+		self.addBUT =  ttk.Button(self.estSettings, text="AÑADIR", style = "size.TButton")
+		self.nameLABEL.grid(column = 4, row = 1, columnspan = 1)
+		self.nameVAR.grid(column = 5, row = 1, columnspan = 2)
+		self.respLABEL.grid(column = 4, row = 2, columnspan = 1)
+		self.respVAR.grid(column = 5, row = 2, columnspan = 2)
+		self.addBUT.grid(column = 4, row = 3, columnspan = 3)
+	def incidenciasWindow(self):
+		print("Abriendo Menu Incidencias")
+		self.estSettings = Toplevel(self.raiz)
+		self.estSettings.geometry('') #Autoajustable
+		self.estSettings.title("Configuracion Incidencias")
+		##Lista de estaciones
+		self.estacionLABEL = ttk.Label(self.estSettings, text="INCIDENCIAS", font = self.font)
+		self.estacionVAR = StringVar(self.estSettings)
+		self.estacionMENU = OptionMenu(self.estSettings, self.estacionVAR, *incidencias)        
+		self.estacionMENU.config(font = self.font)
+		self.deleteBUT =  ttk.Button(self.estSettings, text="ELIMINAR", style = "size.TButton")
+		self.estacionLABEL.grid(column = 1, row = 1, columnspan = 3)
+		self.estacionMENU.grid(column = 1, row = 2, columnspan = 3)
+		self.deleteBUT.grid(column = 1, row = 3, columnspan = 3)
+		##Añadir
+		self.nameLABEL = ttk.Label(self.estSettings, text="NOMBRE", font = self.font)
+		self.nameVAR = ttk.Entry(self.estSettings)
+		self.addBUT =  ttk.Button(self.estSettings, text="AÑADIR", style = "size.TButton")
+		self.nameLABEL.grid(column = 4, row = 1, columnspan = 2)
+		self.nameVAR.grid(column = 4, row = 2, columnspan = 2)
+		self.addBUT.grid(column = 4, row = 3, columnspan = 3)
+	def resolucionesWindow(self):
+		print("Abriendo Menu Resoluciones")
+		self.estSettings = Toplevel(self.raiz)
+		self.estSettings.geometry('') #Autoajustable
+		self.estSettings.title("Configuracion Resoluciones")
+		##Lista de estaciones
+		self.estacionLABEL = ttk.Label(self.estSettings, text="RESOLUCIONES", font = self.font)
+		self.estacionVAR = StringVar(self.estSettings)
+		self.estacionMENU = OptionMenu(self.estSettings, self.estacionVAR, *resoluciones)        
+		self.estacionMENU.config(font = self.font)
+		self.deleteBUT =  ttk.Button(self.estSettings, text="ELIMINAR", style = "size.TButton")
+		self.estacionLABEL.grid(column = 1, row = 1, columnspan = 3)
+		self.estacionMENU.grid(column = 1, row = 2, columnspan = 3)
+		self.deleteBUT.grid(column = 1, row = 3, columnspan = 3)
+		##Añadir
+		self.nameLABEL = ttk.Label(self.estSettings, text="NOMBRE", font = self.font)
+		self.nameVAR = ttk.Entry(self.estSettings)
+		self.addBUT =  ttk.Button(self.estSettings, text="AÑADIR", style = "size.TButton")
+		self.nameLABEL.grid(column = 4, row = 1, columnspan = 2)
+		self.nameVAR.grid(column = 4, row = 2, columnspan = 2)
+		self.addBUT.grid(column = 4, row = 3, columnspan = 3)
+	def copiaWindow(self):
+		print("Abriendo Menu Copia a...")
+		self.estSettings = Toplevel(self.raiz)
+		self.estSettings.geometry('') #Autoajustable
+		self.estSettings.title("Configuracion Envio de copias")
+		##Lista de estaciones
+		self.estefLABEL = ttk.Label(self.estSettings, text="ESTEFANIA", font = self.font)
+		self.estefVAR = ttk.Entry(self.estSettings, width = 50)
+		self.alberLABEL = ttk.Label(self.estSettings, text="ALBERTO", font = self.font)
+		self.alberVAR = ttk.Entry(self.estSettings, width = 50)
+		self.javieLABEL = ttk.Label(self.estSettings, text="JAVIER", font = self.font)
+		self.javieVAR = ttk.Entry(self.estSettings, width = 50)
+		dia = []
+		for i in range(31):
+			dia.append(i+1)
+		mes = []
+		for i in range(12):
+			mes.append(i+1)
+		self.SLABEL = ttk.Label(self.estSettings, text="DESDE", font = self.font)
+		self.SdiaVAR = StringVar(self.estSettings)
+		self.SdiaMENU = OptionMenu(self.estSettings, self.SdiaVAR, *dia)        
+		self.SdiaMENU.config(font = self.font)
+		self.SmesVAR = StringVar(self.estSettings)
+		self.SmesMENU = OptionMenu(self.estSettings, self.SmesVAR, *mes)        
+		self.SmesMENU.config(font = self.font)
+		self.ELABEL = ttk.Label(self.estSettings, text="HASTA", font = self.font)
+		self.EdiaVAR = StringVar(self.estSettings)
+		self.EdiaMENU = OptionMenu(self.estSettings, self.EdiaVAR, *dia)        
+		self.EdiaMENU.config(font = self.font)
+		self.EmesVAR = StringVar(self.estSettings)
+		self.EmesMENU = OptionMenu(self.estSettings, self.EmesVAR, *mes)        
+		self.EmesMENU.config(font = self.font)
+		self.saveBUT =  ttk.Button(self.estSettings, text="GUARDAR", style = "size.TButton", command = self.saveCopyTO)
+		self.showBUT =  ttk.Button(self.estSettings, text="MOSTRAR", style = "size.TButton", command=self.showCopyTO)
+		self.estefLABEL.grid(column = 1, row = 1, columnspan = 1)
+		self.alberLABEL.grid(column = 1, row = 2, columnspan = 1)
+		self.javieLABEL.grid(column = 1, row = 3, columnspan = 1)
+		self.estefVAR.grid(column = 2, row = 1, columnspan = 4)
+		self.alberVAR.grid(column = 2, row = 2, columnspan = 4)
+		self.javieVAR.grid(column = 2, row = 3, columnspan = 4)
+		self.SLABEL.grid(column = 1, row = 4, columnspan = 1)
+		self.SdiaMENU.grid(column = 2, row = 4, columnspan = 1)
+		self.SmesMENU.grid(column = 3, row = 4, columnspan = 1)
+		self.saveBUT.grid(column = 5, row = 4, columnspan = 1)
+		self.ELABEL.grid(column = 1, row = 5, columnspan = 1)
+		self.EdiaMENU.grid(column = 2, row = 5, columnspan = 1)
+		self.EmesMENU.grid(column = 3, row = 5, columnspan = 1)
+		self.showBUT.grid(column = 5, row = 5, columnspan = 1)
+		
+class configActions():
+	def checkCopyFECHA():
+		global copyFECHA, copyTOalberto,copyTOestefania, copyTOjavier
+		if copyFECHA <= datetime.now():
+			copyTOalberto = []
+			copyTOestefania = []
+			copyTOjavier = []
+			copyFECHA = None
+			print("Limpiando copias")
+	def readConfig():
+		confSRC = open("configuraciones.py")
+		confCONT = []
+		for line in confSRC.readlines():
+			if line is not "/n":
+				confCONT.append(line)
+		confSRC.close()
+		return confCONT
+	def writeCopyTO(copyDICT):
+		##VA FUNCIONANDO, HAY QUE PULIR
+		src = configActions.readConfig()
+		srcMOD = []
+		for line in src:
+			modLine = line
+			for ind, val in enumerate(copyDICT):
+				if val in line:
+					modLine = copyDICT[val]
+			srcMOD.append(modLine)
+		conf = open("configuraciones.py","w")
+		for line in srcMOD:
+			conf.write(line)
+			#print(line)
+		conf.close()
 
 def main():
-	flux = plenFLUX()
-	flux.CurrentWrite()
+	#flux = plenFLUX()
+	#flux.CurrentWrite()
+	configActions.checkCopyFECHA()
 	mi_app = Aplicacion()
 	return 0
 
