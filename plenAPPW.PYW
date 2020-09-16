@@ -247,6 +247,8 @@ class Aplicacion():
 				print("Mensaje en copia a ALBERTO")
 			elif self.stationName in copyTOjavier:
 				print("Mensaje en copia a JAVIER")
+			elif self.stationName in copyTOpatricia:
+				print("Mensaje en copia a PATRICIA")
 			else:
 				print("Mensaje SIN copia")
 			return True
@@ -359,6 +361,9 @@ class Aplicacion():
 		elif self.stationName in copyTOjavier:
 			message['To'] = correos[estaciones[self.stationName]]+","+correoMARCOS+","+correoSALA+","+correos["javier"]
 			print("Mensaje en copia a ESTEFANIA")
+		elif self.stationName in copyTOpatricia:
+			message['To'] = correos[estaciones[self.stationName]]+","+correoMARCOS+","+correoSALA+","+correos["patricia"]
+			print("Mensaje en copia a PATRICIA")
 		else:
 			message['To'] = correos[estaciones[self.stationName]]+","+correoMARCOS+","+correoSALA
 			print("Mensaje SIN copia")
@@ -384,6 +389,8 @@ class Aplicacion():
 				server.sendmail(message['From'], [message['To'],correoMARCOS,correoSALA,correos["alberto"]], message.as_string())
 			elif self.stationName in copyTOjavier:
 				server.sendmail(message['From'], [message['To'],correoMARCOS,correoSALA,correos["javier"]], message.as_string())
+			elif self.stationName in copyTOpatricia:
+				server.sendmail(message['From'], [message['To'],correoMARCOS,correoSALA,correos["patricia"]], message.as_string())
 			else:
 				server.sendmail(message['From'], [message['To'],correoMARCOS,correoSALA], message.as_string())
 			print('Email Enviado')			
@@ -399,6 +406,7 @@ class Aplicacion():
 		self.adjunto = filedialog.askopenfile(initialdir="\\\\192.168.102.5\\t. de noche", parent=self.raiz,mode='rb',title='Examinar...')
 		self.incNAME["text"] = self.adjunto.name.split("/")[-1]
 		self.tiempoAPROX["text"] = self.calculateTIME()
+		self.checkEstacionNAME()
 	def sendIncidencia(self):
 		if self.adjunto == None:
 			messagebox.showerror("ERROR","NO HAY INCIDENCIA ADJUNTA")
@@ -426,6 +434,9 @@ class Aplicacion():
 						elif self.stationName in copyTOjavier:
 							messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
 												+correos[coord]+ ",javier.garcia@plenoil.es, "+correoMARCOS+" Y "+correoSALA)
+						elif self.stationName in copyTOpatricia:
+							messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
+												+correos[coord]+ ",patricia.ferreiro@plenoil.es, "+correoMARCOS+" Y "+correoSALA)
 						else:
 							messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
 												+correos[coord]+", "+correoMARCOS+" Y "+correoSALA)
@@ -446,6 +457,9 @@ class Aplicacion():
 					elif self.stationName in copyTOjavier:
 						messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
 											+correos[coord]+ ",javier.garcia@plenoil.es, "+correoMARCOS+" Y "+correoSALA)
+					elif self.stationName in copyTOpatricia:
+						messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
+											+correos[coord]+ ",patricia.ferreiro@plenoil.es, "+correoMARCOS+" Y "+correoSALA)
 					else:
 						messagebox.showinfo("INCIDENCIA CORRECTA","AÑADIDO AL REGISTRO. ENVIADO A "
 											+correos[coord]+", "+correoMARCOS+" Y "+correoSALA)
@@ -639,6 +653,7 @@ class configActions():
 			copyTOalberto = []
 			copyTOestefania = []
 			copyTOjavier = []
+			copyTOpatricia = []
 			copyFECHA = None
 			print("Limpiando copias")
 	def readConfig():
@@ -664,6 +679,9 @@ class configActions():
 			conf.write(line)
 			#print(line)
 		conf.close()
+
+def incidenceChecker():
+	pass
 
 def main():
 	#flux = plenFLUX()
